@@ -7,7 +7,6 @@
 
 import Dygraph from '../../src/dygraph';
 import * as utils from '../../src/dygraph-utils';
-import RangeSelectorPlugin from '../../src/plugins/range-selector';
 
 import Util from './Util';
 import DygraphOps from './DygraphOps';
@@ -17,6 +16,9 @@ import Proxy from './Proxy';
 describe("range-selector", function() {
 
 cleanupAfterEach();
+Dygraph.setGetContext(function(canvas) {
+  return new Proxy(canvas.getContext("2d"));
+});
 
 var restoreConsole;
 var logs = {};
@@ -414,15 +416,14 @@ it('testRangeSelectorPositionIfXAxisNotDrawn', function() {
 
 it('testMiniPlotDrawn', function() {
   // Install Proxy to track canvas calls.
-  var origFunc = utils.getContext;
   var miniHtx;
-  utils.getContext = function(canvas) {
+  Dygraph.setGetContext(function(canvas) {
     if (canvas.className != 'dygraph-rangesel-bgcanvas') {
-      return origFunc(canvas);
+      return canvas.getContext("2d");
     }
-    miniHtx = new Proxy(origFunc(canvas));
+    miniHtx = new Proxy(canvas.getContext("2d"));
     return miniHtx;
-  };
+  });
 
   var opts = {
     width: 480,
@@ -446,7 +447,9 @@ it('testMiniPlotDrawn', function() {
   assert.isNotNull(miniHtx);
   assert.isTrue(0 < CanvasAssertions.numLinesDrawn(miniHtx, '#ff0000'));
 
-  utils.getContext = origFunc;
+  Dygraph.setGetContext(function(canvas) {
+    return new Proxy(canvas.getContext("2d"));
+  });
 });
 
 // Tests data computation for the mini plot with a single series.
@@ -463,7 +466,7 @@ it('testSingleCombinedSeries', function() {
   var graph = document.getElementById("graph");
   var g = new Dygraph(graph, data, opts);
 
-  var rangeSelector = g.getPluginInstance_(RangeSelectorPlugin);
+  var rangeSelector = g.getPluginInstance_(g.plugins_[2].plugin.constructor);
   assert.isNotNull(rangeSelector);
 
   var combinedSeries = rangeSelector.computeCombinedSeriesAndLimits_();
@@ -493,7 +496,7 @@ it('testCombinedSeries', function() {
   var graph = document.getElementById("graph");
   var g = new Dygraph(graph, data, opts);
 
-  var rangeSelector = g.getPluginInstance_(RangeSelectorPlugin);
+  var rangeSelector = g.getPluginInstance_(g.plugins_[2].plugin.constructor);
   assert.isNotNull(rangeSelector);
 
   var combinedSeries = rangeSelector.computeCombinedSeriesAndLimits_();
@@ -526,7 +529,7 @@ it('testSelectedCombinedSeries', function() {
   var graph = document.getElementById("graph");
   var g = new Dygraph(graph, data, opts);
 
-  var rangeSelector = g.getPluginInstance_(RangeSelectorPlugin);
+  var rangeSelector = g.getPluginInstance_(g.plugins_[2].plugin.constructor);
   assert.isNotNull(rangeSelector);
 
   var combinedSeries = rangeSelector.computeCombinedSeriesAndLimits_();
@@ -556,7 +559,7 @@ it('testSingleCombinedSeriesCustomBars', function() {
   var graph = document.getElementById("graph");
   var g = new Dygraph(graph, data, opts);
 
-  var rangeSelector = g.getPluginInstance_(RangeSelectorPlugin);
+  var rangeSelector = g.getPluginInstance_(g.plugins_[2].plugin.constructor);
   assert.isNotNull(rangeSelector);
 
   var combinedSeries = rangeSelector.computeCombinedSeriesAndLimits_();
@@ -585,7 +588,7 @@ it('testSingleCombinedSeriesErrorBars', function() {
   var graph = document.getElementById("graph");
   var g = new Dygraph(graph, data, opts);
 
-  var rangeSelector = g.getPluginInstance_(RangeSelectorPlugin);
+  var rangeSelector = g.getPluginInstance_(g.plugins_[2].plugin.constructor);
   assert.isNotNull(rangeSelector);
 
   var combinedSeries = rangeSelector.computeCombinedSeriesAndLimits_();
@@ -615,7 +618,7 @@ it('testTwoCombinedSeriesCustomBars', function() {
   var graph = document.getElementById("graph");
   var g = new Dygraph(graph, data, opts);
 
-  var rangeSelector = g.getPluginInstance_(RangeSelectorPlugin);
+  var rangeSelector = g.getPluginInstance_(g.plugins_[2].plugin.constructor);
   assert.isNotNull(rangeSelector);
 
   var combinedSeries = rangeSelector.computeCombinedSeriesAndLimits_();
@@ -644,7 +647,7 @@ it('testHiddenSeriesExcludedFromMiniplot', function() {
   var graph = document.getElementById("graph");
   var g = new Dygraph(graph, data, opts);
 
-  var rangeSelector = g.getPluginInstance_(RangeSelectorPlugin);
+  var rangeSelector = g.getPluginInstance_(g.plugins_[2].plugin.constructor);
   assert.isNotNull(rangeSelector);
 
   // Invisible series (e.g. Y2) are not included in the combined series.

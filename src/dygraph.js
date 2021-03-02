@@ -3414,6 +3414,7 @@ Dygraph.prototype.removeTrackedEvents_ = function() {
   this.registeredEvents_ = [];
 };
 
+Dygraph.setGetContext = utils.setGetContext;
 
 // Installed plugins, in order of precedence (most-general to most-specific).
 Dygraph.PLUGINS = [

@@ -12,17 +12,8 @@ import Proxy from './Proxy';
 describe("connect-separated-points", function() {
 
 cleanupAfterEach();
-
-var origFunc = utils.getContext;
-
-beforeEach(function() {
-  utils.getContext = function(canvas) {
-    return new Proxy(origFunc(canvas));
-  };
-});
-
-afterEach(function() {
-  Dygraph.getContext = origFunc;
+Dygraph.setGetContext(function(canvas) {
+  return new Proxy(canvas.getContext("2d"));
 });
 
 it('testEdgePointsSimple', function() {
